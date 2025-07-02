@@ -1,0 +1,220 @@
+---
+title: "Markdown for DegExp v1: Diversity analyses"
+output: 
+  html_document:
+    toc: TRUE
+---
+## Diversity analysis for DegExp
+
+Ultimate Objective of the analysis: confirm the effect of serial dilution on diversity and composition of the community. 
+
+### Establish the directory set up.
+```{r setup}
+setwd(dirname(getwd()))
+PATH="~/"
+knitr::opts_knit$set(root.dir=getwd())
+```
+
+### Load libraries and establish the writing directory. 
+
+```{r message=FALSE}
+library(ggplot2)
+library(vegan)
+library(phyloseq)
+library(dplyr)
+library(plyr)
+library(lme4)
+library(nlme)
+library(gridExtra)
+library(car)
+
+Theme=theme_classic(base_size=11, base_family="Helvetica") +
+	theme(axis.line = element_line(linewidth = 1, colour = "black", linetype = "solid")) +theme(plot.title = element_text(size = 12))+ theme(panel.border=element_rect(fill=NA))
+Theme2=Theme+ theme(legend.position="none") + theme(panel.border=element_rect(fill=NA))
+```
+
+### Second, load the datasets
+These files come from the seq processing script. 
+
+```{r}
+ASVtable=read.table('output_tables_fromPhyloseq/ASVtable_DegExp2025-04-01.txt', header=TRUE)
+TAXtable=read.table('output_tables_fromPhyloseq/TAXtable_DegExp2025-04-01.txt', header=TRUE)
+meta.table=read.table('output_tables_fromPhyloseq/METAtable_DegExp2025-04-01.txt', header=TRUE)
+
+```
+
+#### Metadata edits
+Enrich the metadata object by adding a column with the dilution factors. 
+
+```{r}
+# how to deal with the dilution factor data column? 
+  # as continuous (1:5) using the column meta.table$dilution
+  meta.table$dilution1=factor(meta.table$dilution_tube, levels=c('5', '4', '3', '2', '1', '0')) # as factor
+  meta.table$dilution_factor=meta.table$dilution_tube # as continuous but calculating the dilution factor:
+    # dilution factors for each tube
+    meta.table[which(meta.table$dilution_factor==1),9]=0.1
+    meta.table[which(meta.table$dilution_factor==2),9]=0.01
+    meta.table[which(meta.table$dilution_factor==3),9]=0.001
+    meta.table[which(meta.table$dilution_factor==4),9]=0.0001
+    meta.table[which(meta.table$dilution_factor==5),9]=0.00001
+    meta.table[which(meta.table$dilution_factor==0),9]=1
+    meta.table$dilution_factor=as.numeric(meta.table$dilution_factor)
+  head(meta.table)
+```
+
+
+
+Other edits: series as factor
+```{r}
+ meta.table$series=factor(meta.table$series)
+  head(meta.table)
+```
+
+
+## Univariate Diversity metrics
+
+These indices give us a way to compare communities based on the number of species and their relative abundances - no information about their identity though (see Multivariate metrics).
+
+```{r vegan}
+richness=specnumber(ASVtable)
+shannon=diversity(ASVtable, index='shannon')
+simpson=diversity(ASVtable, index='simpson')
+evenness=shannon/log(richness)
+```
+
+Store these variables within the metadata file:
+```{r echo=FALSE}
+meta.div=data.frame(meta.table, richness, shannon, simpson, evenness)
+head(meta.div)
+```
+
+
+### Descriptive Metrics for Richness, Evenness and Shannon
+The means of the groups can be summarized in this table. Notice the NA indicating groups (dilution*series combinations) that do not have variation
+```{r}
+	Div.summary.dataset=ddply(meta.div, .(dataset), summarize, meanR=mean(richness), sdR=sd(richness), meanShann=mean(shannon), sdShan=sd(shannon), meanSimp=mean(simpson), sdSimp=sd(simpson), meanE=mean(evenness), sdE=sd(evenness))
+write.table(Div.summary.dataset, 'diversity_summary_dataset.txt', sep='\t')
+
+Div.summary.dilution=ddply(meta.div, .(dilution_tube), summarize, meanR=mean(richness), sdR=sd(richness), meanShann=mean(shannon), sdShan=sd(shannon), meanSimp=mean(simpson), sdSimp=sd(simpson), meanE=mean(evenness), sdE=sd(evenness))
+Div.summary.dilution
+write.table(Div.summary.dilution, 'diversity_summary_dilution.txt', sep='\t')
+
+Div.summary.full=ddply(meta.div, .(dilution_tube, series, dataset), summarize, meanR=mean(richness), sdR=sd(richness), meanShann=mean(shannon), sdShan=sd(shannon), meanSimp=mean(simpson), sdSimp=sd(simpson), meanE=mean(evenness), sdE=sd(evenness))
+write.table(Div.summary.dataset, 'diversity_summary_full.txt', sep='\t')
+
+
+```
+
+Remove the control for the diversity trend analysis. Lets make sure we come back to this control later on: how does it compare to the other samples?
+
+```{r}
+meta.div2=meta.div[-which(meta.div$series=='control'),]
+data.frame(dim(meta.div), dim(meta.div2)) # check that the column was eliminated by looking at the dimensions of the datasets
+
+```
+
+### save the diversity metadata file to a output folder
+```{r}
+outPATH='output_files/'
+date=Sys.Date()
+metadiv.table.name=paste(outPATH, 'MetaDiv_table_DegExp', date,'.txt', sep='')
+#write.table(meta.div2,  metadiv.table.name, sep='\t')
+# use this one if connection to drive is problematic
+write.table(meta.div2,  paste('MetaDiv_table_DegExp', date,'.txt', sep=''), sep='\t')
+```
+
+Also create separate datasets for pre and post-degradation, for later processing.
+```{r}
+meta.div2.pre=meta.div2[which(meta.div2$dataset=='pre'),]
+meta.div2.post=meta.div2[which(meta.div2$dataset=='post'),]
+```
+
+## Diversity plots
+
+### Dilution plot: richness and evenness
+Use the dilution factor 
+```{r}
+rich.plot=ggplot(meta.div2, aes(log(dilution_factor), richness)) + 
+  geom_point(size=3, aes(shape=series, fill=dataset))+ 
+  Theme2 + scale_fill_manual(values=c( 'black', 'white')) + 
+  scale_shape_manual(values=c(21,22, 24)) + 
+  #geom_smooth(method='lm', se=FALSE, ) + 
+  xlab('log(Dilution factor)') + ylab('ASV Richness') +
+  scale_x_reverse() + annotate('text', label='a.', x=0, y=200)
+  
+even.plot=ggplot(meta.div2, aes(log(dilution_factor), evenness)) + 
+  geom_point(size=3,  aes(shape=series, fill=dataset)) + 
+  Theme2 + scale_fill_manual(values=c( 'black', 'white')) + 
+  scale_shape_manual(values=c(21,22, 24)) + 
+  xlab('log(Dilution factor)') + ylab('ASV Evenness') +
+   scale_x_reverse() + annotate('text', label='b.', x=0, y=0.8)
+
+uni.div=arrangeGrob(rich.plot, even.plot, ncol=2)  
+#quartz()
+plot(uni.div)
+```
+### Dilution stats: richness
+Simple models to assess the effect of dilution on diversity across all experiments. Comparing a null model, a linear model and a GLMM that include dilution factor and dataset as fixed factors ( in different combinations) and series as a random factor (for GLMM)
+```{r}
+# null model (no relationship)
+mod.null=lm(richness~1)
+# null model (only random)
+mod.null.rand=glmer(richness~1 + (1|series), data=meta.div2)
+# linear model
+mod.rich.lm=lm(richness~log(dilution_factor+1) + dataset, data=meta.div2)
+summary(mod.rich.lm)
+# mixed model
+mod.rich.lmei=glmer(richness~log(dilution_factor+1) + dataset + (1|series), data=meta.div2)
+summary(mod.rich.lmei)
+AIC(mod.null, mod.null.rand,mod.rich.lm, mod.rich.lmei)
+Anova(mod.rich.lmei)
+```
+### Dilution stats: evenness
+Simple models to assess the effect of dilution on diversity across all experiments. Comparing a null model, a linear model and a GLMM that include dilution factor and dataset as fixed factors ( in different combinations) and series as a random factor (for GLMM)
+```{r}
+# null model (no relationship)
+mod.null.e=lm(evenness~1)
+# null model (only random)
+mod.null.rand.e=glmer(evenness~1 + (1|series), data=meta.div2)
+# linear model
+mod.rich.lm.e=lm(evenness~log(dilution_factor+1) + dataset, data=meta.div2)
+summary(mod.rich.lm)
+# mixed model
+mod.rich.lmei.e=glmer(evenness~log(dilution_factor+1) + dataset + (1|series), data=meta.div2)
+summary(mod.rich.lmei)
+AIC(mod.null.e, mod.null.rand.e, mod.rich.lm.e, mod.rich.lmei.e)
+Anova(mod.rich.lm.e)
+```
+#### Richness Before and After the degradation assay
+
+Exploratory metrics for richness reveal the range (16-197) and means (65) for datasets.
+```{r}
+# range of richness for ALL DATA = pre
+print(paste('richness range for all data', range(meta.div2$richness)[1], '-', range(meta.div2$richness)[2], ', mean', mean(meta.div2$richness), 'standard deviation', sd(meta.div2$richness)))
+```
+Because the pre-degradation dataset has a bigger range, it encompasses the highest and lowest values. We calculate also de range for the post-degradation dataset. 
+```{r}
+# range of richness for post-degradation data
+print(paste('richness range for post', range(meta.div2.post$richness)[1], '-', range(meta.div2.post$richness)[2], ', mean', mean(meta.div2.post$richness), 'standard deviation', sd(meta.div2.post$richness)))
+```
+Range of evenness values:
+```{r}
+print(paste('evenness range for all data', range(meta.div2$evenness)[1], '-', range(meta.div2$evenness)[2], ', mean', mean(meta.div2$evenness), 'standard deviation', sd(meta.div2$evenness)))
+```
+We calculate also de range of evenness values for the post-degradation dataset. 
+```{r}
+# range of evenness for post-degradation data
+print(paste('evenness range for post', range(meta.div2.post$evenness)[1], '-', range(meta.div2.post$evenness)[2], ', mean', mean(meta.div2.post$evenness), 'standard deviation', sd(meta.div2.post$evenness)))
+```
+
+## Conclusions
+
+### General
+* Serial dilutions result in a gradient in richness but not in other indicators of diversity.Evenness has a weaker range but it is still significantly affected by dilutions.
+* Series did not contribute to significant differences in richness, but with the loss of samples it is very difficult to assess this difference - may need to implement series as a random factor instead of fixed.
+
+### Next:
+* Functional analysis
+* BEF analysis
+* Multivariate analysis
+
