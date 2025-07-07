@@ -33,8 +33,10 @@ Data files are stored in the input_data folder:
 1. TAXtable_FunExp12021-03-24.txt: Taxonomy table with ASV sequence, Phylum, Class, Order, Family, Genus. It lists the full dataset with 1375 ASVs.  
 2. ASVtable_FunExp12021-03-24.txt: Sample vs ASV table showing read abundances. It contains 97 samples and 1375 ASVs.  
 3. METAtable_RunExp1230-03-24_sampleNamesFIX.txt: Table listing each sample's Leaf age code, Treatment code, and Replicate code. It contains 97 samples.  
+4. DegExp_WeightChange_data_edits.txt: table providing the data on weight change for prey (flies) before and after the degradation assay for each sample. 
+5. Degradation_16Sgene_qPCR_calculations.csv: output of qPCR estimating the 16S rRNA copy number across samples
 
 Data files in the output_files folder are the result of calculations or reshaping of data from the input data folder. See the workflow below for the specific relationships:
-4. MetaDiv_table_DegExp2025-04-01.txt:
-5. 
+6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.
+
 
