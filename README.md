@@ -39,4 +39,20 @@ Data files are stored in the input_data folder:
 Data files in the output_files folder are the result of calculations or reshaping of data from the input data folder. See the workflow below for the specific relationships:
 6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.
 
+## Scripts
+These scripts process data to generate the figures and statistical tests for the main text:
+1. Fig1_BEF_main
+2. Fig2_BEF_estimates_narrow.R
+3. Fig3_Function_correlations.R
+4. Fig4_Function_ASV_heatmap.R
+5. Fig5_NMDS
+6. Fig6_Field_samples.R
+These scripts process data to generate supplementary materials:  
+FigS1_Dilution_diversity
+FigS7_qPCR abund.R
 
+# SOFTWARE VERSIONS
+The software and package versions can be found in the [session information](https://github.com/catalicu/DegExp2019/blob/main/sessionInfo_degexp07072025.txt) file. 
+
+# REFERENCES
+See full manuscritp for list of references.
