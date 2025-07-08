@@ -38,6 +38,7 @@ Data files are stored in the input_data folder:
 
 Data files in the output_files folder are the result of calculations or reshaping of data from the input data folder. See the workflow below for the specific relationships:
 6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.
+7. glmm_funct_rich2025-07-07.txt: results of GLMs evaluating BEF between bacterial richness and each narrow function. Output of script 2 (Fig2_BEF_estimates_narrow.R)
 
 ## Scripts
 These scripts process data to generate the figures and statistical tests for the main text:
