@@ -34,26 +34,27 @@ Data files are stored in the input_data folder:
 2. ASVtable_FunExp12021-03-24.txt: Sample vs ASV table showing read abundances. It contains 97 samples and 1375 ASVs.  
 3. METAtable_RunExp1230-03-24_sampleNamesFIX.txt: Table listing each sample's Leaf age code, Treatment code, and Replicate code. It contains 97 samples.  
 4. DegExp_WeightChange_data_edits.txt: table providing the data on weight change for prey (flies) before and after the degradation assay for each sample. 
-5. Degradation_16Sgene_qPCR_calculations.csv: output of qPCR estimating the 16S rRNA copy number across samples
+5. Degradation_16Sgene_qPCR_calculations.csv: output of qPCR estimating the 16S rRNA copy number across samples. 
 
-Data files in the output_files folder are the result of calculations or reshaping of data from the input data folder. See the workflow below for the specific relationships:
-6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.
-7. glmm_funct_rich2025-07-07.txt: results of GLMs evaluating BEF between bacterial richness and each narrow function. Output of script 2 (Fig2_BEF_estimates_narrow.R)
+Data files in the output_files folder are the result of calculations or reshaping of data from the input data folder. See the workflow below for the specific relationships:  
+6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.  
+7. glmm_funct_rich2025-07-07.txt: results of GLMs evaluating BEF between bacterial richness and each narrow function. Output of script 2 (Fig2_BEF_estimates_narrow.R).  
+8. glmm_functvs2025-07-07.txt: results of GLMs evaluating narrow function - broad function relationships. Output of script 3 (Fig3_Function_correlogram.R).  
 
 ## Scripts
-These scripts process data to generate the figures and statistical tests for the main text:
-1. Fig1_BEF_main
-2. Fig2_BEF_estimates_narrow.R
-3. Fig3_Function_correlations.R
-4. Fig4_Function_ASV_heatmap.R
-5. Fig5_NMDS
-6. Fig6_Field_samples.R
-These scripts process data to generate supplementary materials:  
-FigS1_Dilution_diversity
-FigS7_qPCR abund.R
+These scripts process data to generate the figures and statistical tests for the main text:  
+1. Fig1_BEF_main. 
+2. Fig2_BEF_estimates_narrow.R. 
+3. Fig3_Functions_correlogram.R. 
+4. Fig4_Function_ASV_heatmap.R. 
+5. Fig5_NMDS. 
+6. Fig6_Field_samples.R. 
+These scripts process data to generate supplementary materials:   
+FigS1_Dilution_diversity. 
+FigS7_qPCR abund.R. 
 
 # SOFTWARE VERSIONS
-The software and package versions can be found in the [session information](https://github.com/catalicu/DegExp2019/blob/main/sessionInfo_degexp07072025.txt) file. 
+The software and package versions can be found in the [session information](https://github.com/catalicu/DegExp2019/blob/main/sessionInfo_degexp07072025.txt) file.  
 
 # REFERENCES
-See full manuscritp for list of references.
+See full manuscritp for list of references.  

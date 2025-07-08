@@ -5,6 +5,7 @@
 # Description:
 # This script generates Figure 2 and performs the associated statistical tests.
 
+# SETUP
 ## Load libraries
 library(dplyr)
 library(ggplot2)
