@@ -40,6 +40,7 @@ Data files in the output_files folder are the result of calculations or reshapin
 6. MetaDiv_table_DegExp2025-04-01.txt: diversity indexes (richness, shannon, evenness) for each sample as calculated with script XXX.  
 7. glmm_funct_rich2025-07-07.txt: results of GLMs evaluating BEF between bacterial richness and each narrow function. Output of script 2 (Fig2_BEF_estimates_narrow.R).  
 8. glmm_functvs2025-07-07.txt: results of GLMs evaluating narrow function - broad function relationships. Output of script 3 (Fig3_Function_correlogram.R).  
+9. ASVfundiv.select.all2025-04-15.txt: table with results of GLM models that evaluate the correlation between each ASV relative abundance and each function. Output from script XX.
 
 ## Scripts
 These scripts process data to generate the figures and statistical tests for the main text:  
